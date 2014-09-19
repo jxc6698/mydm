@@ -24,10 +24,7 @@ public class run {
 	}
 	
 	
-	
 
-	
-	
 }
 
 
