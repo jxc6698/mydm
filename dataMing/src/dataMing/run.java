@@ -13,13 +13,14 @@ public class run {
 	{
 
 		String Dir = "lily" ;
-		preProcessData preprocessdata = new preProcessData() ;
 		
 		inputClass inputclass = new inputClass( Dir ) ;
 		inputclass.getAllFiles();
 
 		readData readdata = inputclass.readAllFiles() ;
-
+		
+		preProcessData preprocessdata = new preProcessData( readdata ) ;
+		preprocessdata.start();
 		
 	}
 	

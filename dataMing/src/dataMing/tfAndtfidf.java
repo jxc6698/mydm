@@ -7,6 +7,7 @@ import java.util.Map;
 public class tfAndtfidf {
 	
 	Map<String , Integer> total = null ;
+	Integer sum = 0 ;
 	
 	void run()
 	{
@@ -21,6 +22,7 @@ public class tfAndtfidf {
 	void tf_start()
 	{
 		total = new HashMap<String , Integer>() ;
+		sum = 0 ;
 	}
 	
 	Map<String, Integer> tf_append( Map<String , Integer> words )
@@ -30,6 +32,7 @@ public class tfAndtfidf {
         	Map.Entry entry = (Map.Entry) iter.next();
         	Object key = entry.getKey();
         	Object val = entry.getValue(); 
+        	sum += (Integer)val ;
         	if(total.containsKey( (String)key ) ){
                 total.put( (String)key ,words.get( (String)key )+ (Integer)val );
             }
@@ -44,5 +47,15 @@ public class tfAndtfidf {
 	{
 		return this.total ;
 	}
+	
+	
+	/*
+	 * not 
+	 */
+	Map<String, Integer> tf_average( Map<String , Integer> words )
+	{
+		return this.total ;
+	}
+	
 	
 }

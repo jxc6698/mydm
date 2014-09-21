@@ -6,6 +6,7 @@ import java.util.List;
 public class readData {
 	List line[] = null ;
 	String  filenames[] = null ;
+	
 	readData( int n )
 	{
 		if( n == 0 )
