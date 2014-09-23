@@ -4,11 +4,13 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -29,6 +31,9 @@ public class preProcessData {
 	Map<String,Integer> tokens[][] = null ;
 	List attr = null ;
 	
+	int classnum = 0 ;
+	
+	
 	preProcessData( readData data )
 	{
 		this.readdata = data ;
@@ -36,6 +41,7 @@ public class preProcessData {
 	
 	void start() 
 	{
+		this.classnum = readdata.line.length ;
 		tokens = new Map[readdata.line.length][] ;
 		int posts = 0 ;    // number of total posts
 		
@@ -56,7 +62,9 @@ public class preProcessData {
 		}
 		
 		// get total 
-		Map<String,Double> total = new HashMap<String,Double>() ;
+		Map<String,Double>[] total = new HashMap[ classnum ] ;
+		for( int i=0 ; i < classnum ; i ++)
+			total[i] = new HashMap<String,Double>() ;
 		for( int i=0 ; i < readdata.line.length ; i ++ )
 		{	
 			for( int j = 0 ; j < readdata.line[i].size() ; j ++ )
@@ -71,19 +79,22 @@ public class preProcessData {
 		        		continue ;
 		        	}
 		        	Integer val = (Integer)entry.getValue(); 
-		        	if(total.containsKey( (String)key ) ){
-		                total.put( (String)key ,total.get( (String)key )+ new Double( val) );
+		        	if(total[i].containsKey( (String)key ) ){
+		                total[i].put( (String)key ,total[i].get( (String)key )+ new Double( val) );
 		            }
 		        	else {
-		                total.put((String)key, new Double( val) );
+		                total[i].put((String)key, new Double( val) );
 		            }
 		        }
 	        }
 		}
-		int featurenum = 100 ;
+		int featurenum = 0 ;
 		// fillter part attribute
+		// build attr list
 		attr = new ArrayList<Double>() ;
-		this.fillter( total , featurenum );
+		
+		Set featureset = new HashSet<String>() ;
+		featurenum = this.fillter( total , featurenum , featureset ,readdata.stopwords );
 		
 		// divide the data into  CROSS_NUM parts 
 		List< List<Double> >[] list = new ArrayList[ CROSS_NUM ] ;
@@ -95,87 +106,90 @@ public class preProcessData {
 		}
 		
 		
-		System.out.println( "total token size : "+ total.size() );
-		Iterator iter = total.entrySet().iterator() ;
-
-//		for( int i = 0 ; i < 1000 ; i ++ )
-//		{
-//			Map.Entry entry = (Map.Entry) iter.next();
-//			System.out.println( i + "  "+ entry.getKey()+" "+isNumeric((String)entry.getKey() ) );
-//
-//		}
+		tfAndtfidf tfidf = new tfAndtfidf() ;
+		tfidf.tf_start();
+		tfidf.tf_append( featureset , tokens , list , num , this.CROSS_NUM ) ; 
 		
-		// build attr list
-		
-		int count[] = new int[ this.CROSS_NUM ] ;
-		
-		List<Double> tmplist = null ;
-		for( int i=0 ; i < tokens.length ; i ++ )
-		{	
-			for( int j = 0 ; j < tokens[i].length ; j ++ )
-			{
-				tmplist = new ArrayList<Double>() ;
-				
-				iter = total.entrySet().iterator() ;
-		        while (iter.hasNext()) {
-		        	Map.Entry entry = (Map.Entry) iter.next();
-		        	Object key = entry.getKey();
-		        	if( tokens[i][j].containsKey( (String)key ) ){
-		        		if( tokens[i][j].get( (String)key ) != 0.0 )
-		                	( (ArrayList)tmplist).add( 1.0 );
-		                else
-		                	( (ArrayList)tmplist).add( 0.0 );
-		            }
-		        	else {
-		        		( (ArrayList)tmplist).add( 0.0 );
-		            }
-		        }
-
-	        	( (ArrayList)list[ count[i] ]).add(tmplist);
-	        	num[count[i]].add( i ) ;
-		        
-	        	count[i] = (( count[i] + 1) % CROSS_NUM ) ;
-	        }
-		}
-	
 		NaiveBayes naive = new NaiveBayes() ;
 		
-		naive.clear();
-		for( int i = 0 ;i < CROSS_NUM -1  ; i ++ )
-		{		
-			naive.train( list[i] , num[i] , readdata.line.length , featurenum );	
-			
-		}
-		System.out.println("------------");
-		
-		Integer result[] = null ;
-		result = naive.estimate( list[CROSS_NUM -1] ,featurenum ) ;
-		int accu = 0 ;
-		for( int i = 0 ; i < result.length ; i ++ )
+		for( int j = 0 ; j < CROSS_NUM ; j ++ )
+//		int j=0;
 		{
-			if( result[i] == num[CROSS_NUM -1].get(i) )
-				accu ++ ;
+			naive.clear();
+			for( int i = 0 ;i < CROSS_NUM -1  ; i ++ )
+			{		
+				naive.train( list[(j+i)%CROSS_NUM] , num[(j+i)%CROSS_NUM] , readdata.line.length , featurenum );			
+			}
+			System.out.println("------------");
+			
+			Integer result[] = null ;
+			result = naive.estimate( list[(j+CROSS_NUM -1)%CROSS_NUM] ,featurenum ) ;
+			int accu = 0 ;
+			for( int i = 0 ; i < result.length ; i ++ )
+			{
+//				System.out.println(result[i] + "  " + num[(j+CROSS_NUM -1)%CROSS_NUM].get(i) );
+				if( result[i] == num[(j+CROSS_NUM -1)%CROSS_NUM].get(i) )
+				{
+					accu ++ ;
+				}
+			}
+			System.out.println( result.length + "  "+ accu ) ;		
 		}
-		System.out.println( result.length + "  "+ accu ) ;		
 	}
 	
-	void fillter( Map<String,Double> total , int featurenum )
+	int fillter( Map<String,Double>[] total ,
+			int featurenum , Set<String> list ,
+			Set<String> stopwords )
 	{
-		Iterator iter = total.entrySet().iterator() ;
+		Iterator iter = null ;
+		for( int i = 0 ; i < total.length ; i ++ )
+		{
+			iter = total[i].entrySet().iterator() ;
+	        while (iter.hasNext()) {
+				Map.Entry entry = (Map.Entry) iter.next();
+				if( isNumeric((String)entry.getKey() ) )
+					iter.remove();
+				else
+					list.add( (String)entry.getKey() ) ;
+			}
+		}
+
+		iter = stopwords.iterator() ;
+		while( iter.hasNext() )
+		{
+			String item = (String)iter.next() ;
+			if( list.contains( item ) )
+				list.remove( item ) ;
+		}
+		
+		iter = list.iterator() ;
         while (iter.hasNext()) {
-			Map.Entry entry = (Map.Entry) iter.next();
-			if( isNumeric((String)entry.getKey() ) )
+			String item = (String) iter.next();
+			int tmp1 = 0 , tmp2 , mark ;
+			mark = 0 ;
+			if( total[0].get(item) == null )
+				tmp1 = -1 ;
+			else
+				tmp1 = 1 ;
+			for( int i = 1 ; i < total.length ; i ++ )
+			{
+				if( total[i].get(item) == null )
+					tmp2 = -1 ;
+				else
+					tmp2 = 1 ;
+				tmp1 += tmp2 ;
+			}
+			if( tmp1 >5 || tmp1 < -7 )
+			{
+				//iter.remove();
+			}
+			else
 				iter.remove();
-		}
+        }
         
-        int i = 0 ;
-		iter = total.entrySet().iterator() ;
-        while (iter.hasNext()) {
-			Map.Entry entry = (Map.Entry) iter.next();
-			if( i >= featurenum )
-				iter.remove() ;
-			i ++ ;
-		}
+        System.out.println( list.size() );
+        return list.size() ;
+
         
 	}
 	
@@ -195,6 +209,10 @@ public class preProcessData {
 	
 	class TokenAnalyzer{
 		
+		
+		/*
+		 * this function is just for test use
+		 */
 		public void func()
 		{
 			String text="基于java语言开发的轻量级的中文分词工具包"; 	

@@ -1,13 +1,17 @@
 package dataMing;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class readData {
 	List line[] = null ;
 	String  filenames[] = null ;
 	
-	readData( int n )
+	Set<String> stopwords = null ;
+	
+	public readData( int n )
 	{
 		if( n == 0 )
 			return ;
@@ -18,6 +22,11 @@ public class readData {
 		{
 			line[i] = new ArrayList() ;
 		}
+		
+		if( this.stopwords == null)
+			this.stopwords = new HashSet<String>() ;
+		else
+			System.out.println("sssssss");
 	}
 	void setnum( int n )
 	{
