@@ -143,14 +143,18 @@ public class NaiveBayes {
 	
 	List<Double>[] gTotal = null ;
 	List<Double>[] gsquare = null ;
-	Integer gnum = new Integer(0) ;
+	Integer[] gnum = null ;
 	
 	List<Double>[] gmean = null ;
 	List<Double>[] gVariance = null ;
 	
-	void gaus_clear()
+	void gclear()
 	{
-		;
+		gTotal = null ;
+		gsquare = null ;
+		gnum = null ;
+		gmean = null ;
+		gVariance = null ;
 	}
 	
 	
@@ -161,10 +165,12 @@ public class NaiveBayes {
 		this.classnumber = classnum ;
 		if( gTotal == null )
 		{
+			gnum = new Integer[classnum] ;
 			gTotal = new ArrayList[classnum ] ;
 			gsquare = new ArrayList[classnum ] ;
 			for( int i=0;i<classnum; i ++)
 			{
+				gnum[i] = new Integer(0) ;
 				gTotal[i] = new ArrayList() ;
 				gsquare[i] = new ArrayList() ;
 				for( int j = 0 ; j < featurenum ; j ++ )
@@ -175,15 +181,20 @@ public class NaiveBayes {
 			}
 		}
 		
-		gnum = num.size() ;
 		for( int i =0 ; i < num.size() ; i ++ )
 		{
 			for( int j = 0 ; j < featurenum ; j ++ )
 			{
 				Double tmp = gTotal[num.get(i)].get(j) ;
+			//	System.out.println( gTotal[num.get(i)].get(j) );
 				tmp += traindata.get(i).get( j ) ;
+				gTotal[num.get(i)].set(j, tmp ) ;
+			//	System.out.println( gTotal[num.get(i)].get(j) );
 				tmp = gsquare[num.get(i)].get(j) ;
 				tmp += traindata.get(i).get( j ) * traindata.get(i).get( j ) ;
+				gsquare[num.get(i)].set(j, tmp) ;
+//				if( traindata.get(i).get( j ) != 0.0 )
+					gnum[num.get(i)] ++ ;
 			}
 		}
 		
@@ -201,8 +212,8 @@ public class NaiveBayes {
 			gVariance[i] = new ArrayList() ;
 			for( int j = 0 ; j < featurenum ; j ++ )
 			{
-				gmean[i].add( new Double( gTotal[i].get(j) / gnum ) ) ;
-				gVariance[i].add( new Double( ( gsquare[i].get(j) - gmean[i].get(j) * gmean[i].get(j) ) / gnum ) ) ;
+				gmean[i].add( new Double( gTotal[i].get(j) / gnum[i] ) ) ;
+				gVariance[i].add( new Double( ( gsquare[i].get(j) ) / gnum[i] - gmean[i].get(j) * gmean[i].get(j) ) ) ;
 			}
 		}
 	}
@@ -212,11 +223,11 @@ public class NaiveBayes {
 	Integer[] gestimate( List< List<Double>> esdata , int featurenum )
 	{
 		Integer result[] = new Integer[ esdata.size() ] ;
-		Double probability[] = new Double[ this.featurenumber ] ;
-		for(int i =0; i < probability.length ; i++)
-			probability[i] = new Double(1) ;
+		Double probability[] = new Double[ this.classnumber ] ;
 		for( int i = 0 ; i < esdata.size() ; i ++ )
 		{
+			for(int k =0; k < probability.length ; k++)
+				probability[k] = new Double(1);
 			// j is feature id 
 			for( int j = 0 ; j < featurenum ; j ++ )
 			{
@@ -226,7 +237,9 @@ public class NaiveBayes {
 					// in here shouble be  *= ( * number[k] / number[k] ) ;
 					Double d = Math.sqrt( gVariance[k].get(j) ) ;
 					Double m = esdata.get(i).get(j) - gmean[k].get(j) ;
-					probability[k] *= ( Math.exp( -1 * ( m*m ) / (2*d*d) ) / d ) ;
+					d += 0.00000001 ;	
+					m += 0.00000001 ;
+					probability[k] +=( ( -1 * ( m*m ) / (2*d*d) ) - Math.log( d ) ) ;
 				}
 			}
 			

@@ -29,6 +29,8 @@ public class preProcessData {
 	TokenAnalyzer token = new TokenAnalyzer() ;
 	readData readdata = null ;
 	Map<String,Integer> tokens[][] = null ;
+	Map<String,Double>[] total = null ;
+	Map<String,Double>[] totald = null ;
 	List attr = null ;
 	
 	int classnum = 0 ;
@@ -39,7 +41,7 @@ public class preProcessData {
 		this.readdata = data ;
 	}
 	
-	void start() 
+	void prepare()
 	{
 		this.classnum = readdata.line.length ;
 		tokens = new Map[readdata.line.length][] ;
@@ -62,9 +64,13 @@ public class preProcessData {
 		}
 		
 		// get total 
-		Map<String,Double>[] total = new HashMap[ classnum ] ;
+		total = new HashMap[ classnum ] ;
+		totald = new HashMap[ classnum ] ;
 		for( int i=0 ; i < classnum ; i ++)
+		{
 			total[i] = new HashMap<String,Double>() ;
+			totald[i] = new HashMap<String,Double>() ;
+		}
 		for( int i=0 ; i < readdata.line.length ; i ++ )
 		{	
 			for( int j = 0 ; j < readdata.line[i].size() ; j ++ )
@@ -85,9 +91,20 @@ public class preProcessData {
 		        	else {
 		                total[i].put((String)key, new Double( val) );
 		            }
+		        	if(totald[i].containsKey( (String)key ) ){
+		                totald[i].put( (String)key ,totald[i].get( (String)key )+ 1.0 );
+		            }
+		        	else {
+		                totald[i].put((String)key, new Double( 1) );
+		            }
 		        }
 	        }
 		}
+	}
+	
+	void nbd_start() 
+	{
+		this.prepare();
 		int featurenum = 0 ;
 		// fillter part attribute
 		// build attr list
@@ -137,14 +154,14 @@ public class preProcessData {
 		}
 	}
 	
-	int fillter( Map<String,Double>[] total ,
+	int fillter( Map<String,Double>[] totalm ,
 			int featurenum , Set<String> list ,
 			Set<String> stopwords )
 	{
 		Iterator iter = null ;
-		for( int i = 0 ; i < total.length ; i ++ )
+		for( int i = 0 ; i < totalm.length ; i ++ )
 		{
-			iter = total[i].entrySet().iterator() ;
+			iter = totalm[i].entrySet().iterator() ;
 	        while (iter.hasNext()) {
 				Map.Entry entry = (Map.Entry) iter.next();
 				if( isNumeric((String)entry.getKey() ) )
@@ -167,19 +184,21 @@ public class preProcessData {
 			String item = (String) iter.next();
 			int tmp1 = 0 , tmp2 , mark ;
 			mark = 0 ;
-			if( total[0].get(item) == null )
+			if( totalm[0].get(item) == null )
 				tmp1 = -1 ;
 			else
 				tmp1 = 1 ;
-			for( int i = 1 ; i < total.length ; i ++ )
+			for( int i = 1 ; i < totalm.length ; i ++ )
 			{
-				if( total[i].get(item) == null )
+				if( totalm[i].get(item) == null )
 					tmp2 = -1 ;
 				else
 					tmp2 = 1 ;
 				tmp1 += tmp2 ;
 			}
-			if( tmp1 >5 || tmp1 < -7 )
+			if( tmp1 >7 || tmp1 < -7 )  // 17329
+//			if( tmp1 >8 || tmp1 < -8 )  // 71
+//			if( tmp1 >7 || tmp1 < -8  )	// 206
 			{
 				//iter.remove();
 			}
@@ -207,9 +226,127 @@ public class preProcessData {
 	
 	
 	
+	
+	
+	void nbcd_start()
+	{
+		this.prepare();
+		
+		int featurenum = 0 ;
+		// fillter part attribute
+		// build attr list
+		attr = new ArrayList<Double>() ;
+		
+		Set featureset = new HashSet<String>() ;
+		featurenum = this.fillter( total , featurenum , featureset ,readdata.stopwords );
+		
+		// divide the data into  CROSS_NUM parts 
+		List< List<Double> >[] list = new ArrayList[ CROSS_NUM ] ;
+		List<Integer> num[] = new ArrayList[ CROSS_NUM ] ;
+		for(int i=0;i<CROSS_NUM; i ++)
+		{
+			list[i] = new ArrayList() ;
+			num[i] = new ArrayList<Integer>() ;
+		}
+		
+		
+		tfAndtfidf tfidf = new tfAndtfidf() ;
+		tfidf.tf_start();
+		tfidf.tfidf( featureset , tokens , total , list , num , this.CROSS_NUM ) ; 
+		
+		NaiveBayes naive = new NaiveBayes() ;
+		for( int j = 0 ; j < CROSS_NUM ; j ++ )
+//			int j=0;
+			{
+				naive.clear();
+				for( int i = 0 ;i < CROSS_NUM -1  ; i ++ )
+				{		
+					naive.train( list[(j+i)%CROSS_NUM] , num[(j+i)%CROSS_NUM] , readdata.line.length , featurenum );			
+				}
+				System.out.println("------------");
+				
+				Integer result[] = null ;
+				result = naive.estimate( list[(j+CROSS_NUM -1)%CROSS_NUM] ,featurenum ) ;
+				int accu = 0 ;
+				for( int i = 0 ; i < result.length ; i ++ )
+				{
+//					System.out.println(result[i] + "  " + num[(j+CROSS_NUM -1)%CROSS_NUM].get(i) );
+					if( result[i] == num[(j+CROSS_NUM -1)%CROSS_NUM].get(i) )
+					{
+						accu ++ ;
+					}
+				}
+				System.out.println( result.length + "  "+ accu ) ;		
+			}
+	}
+	
+	void nbcg_start()
+	{
+		this.prepare();
+		int featurenum = 0 ;
+		// fillter part attribute
+		// build attr list
+		attr = new ArrayList<Double>() ;
+		
+		Set featureset = new HashSet<String>() ;
+		featurenum = this.fillter( total , featurenum , featureset ,readdata.stopwords );
+		
+	
+		// divide the data into  CROSS_NUM parts 
+		List< List<Double> >[] list = new ArrayList[ CROSS_NUM ] ;
+		List<Integer> num[] = new ArrayList[ CROSS_NUM ] ;
+		for(int i=0;i<CROSS_NUM; i ++)
+		{
+			list[i] = new ArrayList() ;
+			num[i] = new ArrayList<Integer>() ;
+		}
+		
+		
+		tfAndtfidf tfidf = new tfAndtfidf() ;
+		tfidf.tf_start();
+		tfidf.tfidf( featureset , tokens , totald , list , num , this.CROSS_NUM ) ; 
+		
+//		for( int i =0 ; i < list.length ; i ++ )
+//		{
+//			for( int j = 0 ; j < list[i].size() ; j ++ ) 
+//			{
+//				if( num[i].get(j) == 0 )
+//					System.out.println(list[i].get(0) );
+//			}
+//		}
+//		
+//		System.exit(0);
+		
+		NaiveBayes naive = new NaiveBayes() ;
+		for( int j = 0 ; j < CROSS_NUM ; j ++ )
+//			int j=0;
+			{
+				naive.gclear();
+				for( int i = 0 ;i < CROSS_NUM -1  ; i ++ )
+				{		
+					naive.gtrain( list[(j+i)%CROSS_NUM] , num[(j+i)%CROSS_NUM] , readdata.line.length , featurenum );			
+				}
+				naive.gendtrain();
+				System.out.println("------------");
+				
+				Integer result[] = null ;
+				result = naive.gestimate( list[(j+CROSS_NUM -1)%CROSS_NUM] ,featurenum ) ;
+
+				int accu = 0 ;
+				for( int i = 0 ; i < result.length ; i ++ )
+				{
+	//				System.out.println(result[i] + "  " + num[(j+CROSS_NUM -1)%CROSS_NUM].get(i) );
+					if( result[i] == num[(j+CROSS_NUM -1)%CROSS_NUM].get(i) )
+					{
+						accu ++ ;
+					}
+				}
+				System.out.println( result.length + "  "+ accu ) ;		
+			}
+	}
+	
+	
 	class TokenAnalyzer{
-		
-		
 		/*
 		 * this function is just for test use
 		 */

@@ -86,10 +86,50 @@ public class tfAndtfidf {
 	
 	
 	
-	Map<String, Double> tfidf( Map<String , Integer> words )
+	void tfidf( Set<String> featureset ,
+			Map<String,Integer> tokens[][] ,
+			Map<String,Double>[] totald ,
+			List< List<Double> >[] list ,
+			List<Integer> num[] ,
+			int cross_class )
 	{
-		Map<String,Double> 
-		return null ;
+//		Map<String,Double> 
+		int count[] = new int[ tokens.length] ;
+		List<Double> tmplist = null ;
+		for( int i=0 ; i < tokens.length ; i ++ )
+		{	
+			for( int j = 0 ; j < tokens[i].length ; j ++ )
+			{
+				tmplist = new ArrayList<Double>() ;
+				
+				Iterator  iter = featureset.iterator() ;
+		        while (iter.hasNext()) {
+		        	String key = (String)iter.next();
+		        	if( tokens[i][j].containsKey( key ) ){
+		        		( (ArrayList)tmplist).add( new Double( tokens[i][j].get(key) ) *( Math.log( ( 1.0+tokens[i].length ) / (totald[i].get(key) + 1.0) ) ) );
+		        	}
+		        	else
+		        	{
+		        		( (ArrayList)tmplist).add( 0.0 );
+		        	}
+//		        	if( tokens[i][j].containsKey( key ) ){
+//		        		if( tokens[i][j].get( key ) != 0.0 )
+//		                	( (ArrayList)tmplist).add( 1.0 );
+//		                else
+//		                	( (ArrayList)tmplist).add( 0.0 );
+//		            }
+//		        	else {
+//		        		( (ArrayList)tmplist).add( 0.0 );
+//		            }
+		        }
+
+	        	( (ArrayList)list[ count[i] ]).add(tmplist);
+	        	num[count[i]].add( i ) ;
+	        	
+	        	count[i] = ( (count[i] + 1 ) % cross_class ) ;
+	        }
+		}
+		return ;
 	}
 	
 }

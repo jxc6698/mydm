@@ -20,7 +20,10 @@ public class run {
 		readData readdata = inputclass.readAllFiles() ;
 		
 		preProcessData preprocessdata = new preProcessData( readdata ) ;
-		preprocessdata.start();
+		
+//		preprocessdata.nbd_start();
+//		preprocessdata.nbcd_start() ;
+		preprocessdata.nbcg_start() ;
 		
 	}
 	
