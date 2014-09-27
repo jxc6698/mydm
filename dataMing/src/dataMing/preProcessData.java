@@ -24,6 +24,9 @@ import org.wltea.analyzer.lucene.*;
 
 public class preProcessData {
 
+	final boolean debug = false ;
+	
+	
 	int CROSS_NUM = 10 ;
 	
 	TokenAnalyzer token = new TokenAnalyzer() ;
@@ -34,6 +37,8 @@ public class preProcessData {
 	List attr = null ;
 	
 	int classnum = 0 ;
+	
+	double accuracy[] = new double[ CROSS_NUM ];
 	
 	
 	preProcessData( readData data )
@@ -107,9 +112,6 @@ public class preProcessData {
 		this.prepare();
 		int featurenum = 0 ;
 		// fillter part attribute
-		// build attr list
-		attr = new ArrayList<Double>() ;
-		
 		Set featureset = new HashSet<String>() ;
 		featurenum = this.fillter( total , featurenum , featureset ,readdata.stopwords );
 		
@@ -130,28 +132,28 @@ public class preProcessData {
 		NaiveBayes naive = new NaiveBayes() ;
 		
 		for( int j = 0 ; j < CROSS_NUM ; j ++ )
-//		int j=0;
 		{
 			naive.clear();
 			for( int i = 0 ;i < CROSS_NUM -1  ; i ++ )
 			{		
 				naive.train( list[(j+i)%CROSS_NUM] , num[(j+i)%CROSS_NUM] , readdata.line.length , featurenum );			
 			}
-			System.out.println("------------");
+			if(debug)	System.out.println("------------");
 			
 			Integer result[] = null ;
 			result = naive.estimate( list[(j+CROSS_NUM -1)%CROSS_NUM] ,featurenum ) ;
 			int accu = 0 ;
 			for( int i = 0 ; i < result.length ; i ++ )
 			{
-//				System.out.println(result[i] + "  " + num[(j+CROSS_NUM -1)%CROSS_NUM].get(i) );
 				if( result[i] == num[(j+CROSS_NUM -1)%CROSS_NUM].get(i) )
 				{
 					accu ++ ;
 				}
 			}
-			System.out.println( result.length + "  "+ accu ) ;		
+			accuracy[j] = ((double)accu ) / result.length ; 
+			if(debug) System.out.println( result.length + "  "+ accu ) ;		
 		}
+		this.getresultmeanvariance();
 	}
 	
 	int fillter( Map<String,Double>[] totalm ,
@@ -196,9 +198,10 @@ public class preProcessData {
 					tmp2 = 1 ;
 				tmp1 += tmp2 ;
 			}
-			if( tmp1 >7 || tmp1 < -7 )  // 17329
+//			if( tmp1 >7 || tmp1 < -7 )  // 17329
 //			if( tmp1 >8 || tmp1 < -8 )  // 71
 //			if( tmp1 >7 || tmp1 < -8  )	// 206
+			if( tmp1 >5 || tmp1 <-6 )
 			{
 				//iter.remove();
 			}
@@ -234,9 +237,6 @@ public class preProcessData {
 		
 		int featurenum = 0 ;
 		// fillter part attribute
-		// build attr list
-		attr = new ArrayList<Double>() ;
-		
 		Set featureset = new HashSet<String>() ;
 		featurenum = this.fillter( total , featurenum , featureset ,readdata.stopwords );
 		
@@ -256,47 +256,41 @@ public class preProcessData {
 		
 		NaiveBayes naive = new NaiveBayes() ;
 		for( int j = 0 ; j < CROSS_NUM ; j ++ )
-//			int j=0;
 			{
 				naive.clear();
 				for( int i = 0 ;i < CROSS_NUM -1  ; i ++ )
 				{		
 					naive.train( list[(j+i)%CROSS_NUM] , num[(j+i)%CROSS_NUM] , readdata.line.length , featurenum );			
 				}
-				System.out.println("------------");
+				if(debug) System.out.println("------------");
 				
 				Integer result[] = null ;
 				result = naive.estimate( list[(j+CROSS_NUM -1)%CROSS_NUM] ,featurenum ) ;
 				int accu = 0 ;
 				for( int i = 0 ; i < result.length ; i ++ )
 				{
-//					System.out.println(result[i] + "  " + num[(j+CROSS_NUM -1)%CROSS_NUM].get(i) );
 					if( result[i] == num[(j+CROSS_NUM -1)%CROSS_NUM].get(i) )
 					{
 						accu ++ ;
 					}
 				}
-				System.out.println( result.length + "  "+ accu ) ;		
+				accuracy[j] = ((double)accu ) / result.length ; 
+				if(debug) System.out.println( result.length + "  "+ accu ) ;		
 			}
+		this.getresultmeanvariance();
 	}
 	
 	void nbcg_start()
 	{
 		this.prepare();
 		int featurenum = 0 ;
-		// fillter part attribute
-		// build attr list
-		attr = new ArrayList<Double>() ;
-		
 		Set featureset = new HashSet<String>() ;
 		featurenum = this.fillter( total , featurenum , featureset ,readdata.stopwords );
-		
-	
 		// divide the data into  CROSS_NUM parts 
 		List< List<Double> >[] list = new ArrayList[ CROSS_NUM ] ;
 		List<Integer> num[] = new ArrayList[ CROSS_NUM ] ;
 		for(int i=0;i<CROSS_NUM; i ++)
-		{
+		{ 
 			list[i] = new ArrayList() ;
 			num[i] = new ArrayList<Integer>() ;
 		}
@@ -306,20 +300,8 @@ public class preProcessData {
 		tfidf.tf_start();
 		tfidf.tfidf( featureset , tokens , totald , list , num , this.CROSS_NUM ) ; 
 		
-//		for( int i =0 ; i < list.length ; i ++ )
-//		{
-//			for( int j = 0 ; j < list[i].size() ; j ++ ) 
-//			{
-//				if( num[i].get(j) == 0 )
-//					System.out.println(list[i].get(0) );
-//			}
-//		}
-//		
-//		System.exit(0);
-		
 		NaiveBayes naive = new NaiveBayes() ;
 		for( int j = 0 ; j < CROSS_NUM ; j ++ )
-//			int j=0;
 			{
 				naive.gclear();
 				for( int i = 0 ;i < CROSS_NUM -1  ; i ++ )
@@ -327,7 +309,7 @@ public class preProcessData {
 					naive.gtrain( list[(j+i)%CROSS_NUM] , num[(j+i)%CROSS_NUM] , readdata.line.length , featurenum );			
 				}
 				naive.gendtrain();
-				System.out.println("------------");
+				if(debug) System.out.println("------------");
 				
 				Integer result[] = null ;
 				result = naive.gestimate( list[(j+CROSS_NUM -1)%CROSS_NUM] ,featurenum ) ;
@@ -335,46 +317,38 @@ public class preProcessData {
 				int accu = 0 ;
 				for( int i = 0 ; i < result.length ; i ++ )
 				{
-	//				System.out.println(result[i] + "  " + num[(j+CROSS_NUM -1)%CROSS_NUM].get(i) );
 					if( result[i] == num[(j+CROSS_NUM -1)%CROSS_NUM].get(i) )
 					{
 						accu ++ ;
 					}
 				}
-				System.out.println( result.length + "  "+ accu ) ;		
+				accuracy[j] = ((double)accu ) / result.length ; 
+				if(debug) System.out.println( result.length + "  "+ accu ) ;		
 			}
+		this.getresultmeanvariance();
 	}
 	
 	
-	class TokenAnalyzer{
-		/*
-		 * this function is just for test use
-		 */
-		public void func()
+	void getresultmeanvariance()
+	{
+		Double mean = new Double(0) ;
+		Double variance = new Double(0) ;
+		for( int i = 0 ; i< accuracy.length ; i ++ )
 		{
-			String text="基于java语言开发的轻量级的中文分词工具包"; 	
-			Analyzer analyzer = new IKAnalyzer() ;
-
-			StringReader reader=new StringReader(text);  
-			//分词  
-			TokenStream ts= analyzer.tokenStream("", reader);
-	        CharTermAttribute term=ts.getAttribute(CharTermAttribute.class);  
-	        //遍历分词数据  
-	        try {
-				while(ts.incrementToken()){  
-				    System.out.print(term.toString()+"|");  
-				}
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}  
-	               
-	        reader.close();  
-	        System.out.println();			
-	
-			return ;
+			mean += accuracy[i] ;
+			variance += accuracy[i] * accuracy[i] ;
 		}
+		mean /= accuracy.length ;
+		variance /= accuracy.length ;
+		System.out.println("mean " + mean );
+		System.out.println("variance " + variance ) ;
+	}
 	
+	class TokenAnalyzer{
+
+		/*
+		 * return Map class of tokens of input text String
+		 */
 		public Map getTextDef(String text ) throws IOException {
 	        Map<String, Integer> wordsFren=new HashMap<String, Integer>();
 	        IKSegmenter ikSegmenter = new IKSegmenter(new StringReader(text), true);
@@ -388,14 +362,6 @@ public class preProcessData {
 	                }
 	            }
 	        }
-	        
-	        Iterator iter = wordsFren.entrySet().iterator();
-//	        while (iter.hasNext()) {
-//	        	Map.Entry<String , Integer> entry = (Map.Entry<String,Integer>) iter.next();
-//	        	String key = (String) entry.getKey();
-//	        	Integer val = (Integer)entry.getValue();
-//	        }
-
 	        return wordsFren;
 	    }
 			

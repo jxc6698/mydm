@@ -58,8 +58,6 @@ public class NaiveBayes {
 				for( int j = 0 ; j < featurenum ; j ++ )
 					total[i][j] = new Double(0) ;
 			}
-			
-			
 		}
 		for( int i =0 ; i <num.size() ; i ++ )
 		{
@@ -86,7 +84,7 @@ public class NaiveBayes {
 	Integer[] estimate( List< List<Double>> esdata ,
 			int featurenum )
 	{
-		double delta = 0.05 ;
+		double delta = 0.01 ;
 		Integer result[] = new Integer[ esdata.size() ] ;
 		Double probability[] = new Double[ this.number.length] ;
 		for(int i =0; i < probability.length ; i++)
@@ -103,14 +101,14 @@ public class NaiveBayes {
 				{
 					if( classifier[ k ][j].get( esdata.get(i).get(j) ) == null )
 					{
-						probability[k] *= delta / ( total[k][j] + classifier[ k ][j].size() * delta ) ;
-					//	break ;
+					//	probability[k] *= delta / ( total[k][j] + classifier[ k ][j].size() * delta ) ;
+						probability[k] += Math.log(delta) - Math.log( total[k][j] + classifier[ k ][j].size() * delta  ) ;
 					}
 					else
 					{
 						// in here shouble be  *= ( * number[k] / number[k] ) ;
-					//	probability[k] *= new Double(classifier[ k ][j].get( esdata.get(i).get(j) ) ) ;
-						probability[k] *= (delta +  new Double(classifier[ k ][j].get( esdata.get(i).get(j) ) ) ) /( total[k][j] + classifier[ k ][j].size() *delta ) ;
+					//	probability[k] *= (delta +  new Double(classifier[ k ][j].get( esdata.get(i).get(j) ) ) ) /( total[k][j] + classifier[ k ][j].size() *delta ) ;
+						probability[k] += Math.log(delta +  new Double(classifier[ k ][j].get( esdata.get(i).get(j) ) )) - Math.log( total[k][j] + classifier[ k ][j].size() * delta  ) ;
 					}
 				}
 			}

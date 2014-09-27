@@ -21,8 +21,8 @@ public class run {
 		
 		preProcessData preprocessdata = new preProcessData( readdata ) ;
 		
-//		preprocessdata.nbd_start();
-//		preprocessdata.nbcd_start() ;
+		preprocessdata.nbd_start();
+		preprocessdata.nbcd_start() ;
 		preprocessdata.nbcg_start() ;
 		
 	}

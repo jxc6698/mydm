@@ -60,8 +60,6 @@ public class inputClass{
 //			System.out.println( input.nextLine() );
 			readdata.stopwords.add( input.nextLine() ) ;
 		}
-		
-		
 		return readdata ;
 	}
 	
@@ -79,7 +77,6 @@ public class inputClass{
 	{
 		return ;
 	}
-	
 	
 	void debug_filenames()
 	{
