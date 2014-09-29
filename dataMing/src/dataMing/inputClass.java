@@ -13,18 +13,18 @@ public class inputClass{
 	File files[] = null ;
 	readData readdata = null ;
 	
-	inputClass( String name )
+	public inputClass( String name )
 	{
 		readdata = new readData( 0 ) ;
 		this.path = name ;
 	}
 	
-	void getAllFiles()
+	public void getAllFiles()
 	{
 		this.files = new File(this.path).listFiles() ;
 	}
 	
-	readData readAllFiles()
+	public readData readAllFiles()
 	{
 		Scanner input = null ;
 		readdata.setnum( files.length );

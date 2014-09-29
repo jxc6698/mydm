@@ -21,12 +21,12 @@ public class tfAndtfidf {
 		;
 	}
 	
-	void tf_start()
+	public void tf_start()
 	{
 		sum = 0 ;
 	}
 	
-	void tf_append( Set<String> featureset ,
+	public void tf_append( Set<String> featureset ,
 			Map<String,Integer> tokens[][] ,
 			List< List<Double> >[] list ,
 			List<Integer> num[] ,
@@ -86,7 +86,7 @@ public class tfAndtfidf {
 	
 	
 	
-	void tfidf( Set<String> featureset ,
+	public void tfidf( Set<String> featureset ,
 			Map<String,Integer> tokens[][] ,
 			Map<String,Double>[] totald ,
 			List< List<Double> >[] list ,

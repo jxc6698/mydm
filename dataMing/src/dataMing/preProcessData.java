@@ -29,24 +29,31 @@ public class preProcessData {
 	
 	int CROSS_NUM = 10 ;
 	
-	TokenAnalyzer token = new TokenAnalyzer() ;
+	public TokenAnalyzer token = new TokenAnalyzer() ;
 	readData readdata = null ;
 	Map<String,Integer> tokens[][] = null ;
 	Map<String,Double>[] total = null ;
 	Map<String,Double>[] totald = null ;
-	List attr = null ;
 	
 	int classnum = 0 ;
 	
 	double accuracy[] = new double[ CROSS_NUM ];
 	
 	
-	preProcessData( readData data )
+	public preProcessData( readData data )
 	{
 		this.readdata = data ;
 	}
 	
-	void prepare()
+	public void getpreparedata( predata pred )
+	{
+		pred.tokens = this.tokens ;
+		pred.total = total ;
+		pred.totald = totald ;
+		pred.stopwords = readdata.stopwords ;
+	}
+	
+	public void prepare()
 	{
 		this.classnum = readdata.line.length ;
 		tokens = new Map[readdata.line.length][] ;
@@ -89,6 +96,7 @@ public class preProcessData {
 		        		iter.remove();
 		        		continue ;
 		        	}
+		        	// total  tf 
 		        	Integer val = (Integer)entry.getValue(); 
 		        	if(total[i].containsKey( (String)key ) ){
 		                total[i].put( (String)key ,total[i].get( (String)key )+ new Double( val) );
@@ -96,6 +104,7 @@ public class preProcessData {
 		        	else {
 		                total[i].put((String)key, new Double( val) );
 		            }
+		        	// word in appear times in t
 		        	if(totald[i].containsKey( (String)key ) ){
 		                totald[i].put( (String)key ,totald[i].get( (String)key )+ 1.0 );
 		            }
@@ -156,7 +165,7 @@ public class preProcessData {
 		this.getresultmeanvariance();
 	}
 	
-	int fillter( Map<String,Double>[] totalm ,
+	public int fillter( Map<String,Double>[] totalm ,
 			int featurenum , Set<String> list ,
 			Set<String> stopwords )
 	{
@@ -201,7 +210,7 @@ public class preProcessData {
 //			if( tmp1 >7 || tmp1 < -7 )  // 17329
 //			if( tmp1 >8 || tmp1 < -8 )  // 71
 //			if( tmp1 >7 || tmp1 < -8  )	// 206
-			if( tmp1 >5 || tmp1 <-6 )
+			if( tmp1 <5  && tmp1 > -5 )
 			{
 				//iter.remove();
 			}

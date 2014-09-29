@@ -9,7 +9,7 @@ public class readData {
 	List line[] = null ;
 	String  filenames[] = null ;
 	
-	Set<String> stopwords = null ;
+	public Set<String> stopwords = null ;
 	
 	public readData( int n )
 	{
