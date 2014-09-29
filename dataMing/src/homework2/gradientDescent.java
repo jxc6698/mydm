@@ -13,8 +13,8 @@ public class gradientDescent {
 	Double beita[] = null ; 
 	Double partiald[] = null ;
 	Double mu = new Double( 0.1  ) ;
-	Double maxb = new Double(  0.1 ) ;
-	Matrix mmm = null ;
+	Double m = new Double( 0 ) ;
+	Double maxb = new Double(  1 ) ;
 	
 	// beita init to 0 
 	void init( int featurenum )
@@ -39,7 +39,7 @@ public class gradientDescent {
 		Double exp = Math.exp( tmp ) ; 
 		if( exp > 100000 )
 		{
-			if(globalconfig.debug) System.out.println("+++++++ ") ;
+			//if(globalconfig.debug) System.out.println("+++++++ ") ;
 		}
 	//	System.out.println("----  " + exp ) ;
 		if( exp > 100000 )
@@ -61,59 +61,76 @@ public class gradientDescent {
 		List<Double> l1 = null ;
 		Double tmp = new Double( 0 ) ;
 		int count = 0 ;
+		int s1 = class1.size() , s2= class2.size() ;
+		int total = class1.size() + class2.size() ;
 		while( true )
 		{
 			boolean bool = true ;
+			int cc = 0 ;
+			
+//			Integer ran = (int) (Math.random()*total) ;
+//			int ra = (int) (Math.random()*2) ;
+//			if( ra == 1 )
+//			{	
+			
+			
+
+			
+//		int i = ran % s1 ;
 			for(int i = 0 ; i < class1.size() ; i ++ )
 			{
+				
+			for( int j = 0 ; j < partiald.length ;j ++ )
+				partiald[j] = 0.0 ;
 				l1 = class1.get(i) ;
 				tmp = this.getp(l1 ,  0) ;
 				
 				
 				partiald[0] += 1 * ( 0 - tmp ) ;
 				for( int j = 0 ; j < featurenumber ; j ++ )
-					partiald[j+1] += l1.get(j) * ( 0 - tmp );
+					partiald[j+1] += l1.get(j) * ( 0 - tmp ) ;
 				
 				bool =true ;
 				for( int j = 0 ; j <= featurenumber ; j ++ )
 					if( partiald[j] > maxb )
 						bool = false ;
 				if( bool )
-					continue ;
+					cc ++ ;
 				for( int j = 0 ; j <= featurenumber ; j ++ )
 					beita[j] += mu * partiald[j] ;
 			}
-		
+//			}
+//			else
+//			{
+//			int i = ran %s2 ;
+			
+	
 			for( int i = 0 ; i < class2.size() ; i ++ )
 			{
+				
+		for( int j = 0 ; j < partiald.length ;j ++ )
+				partiald[j] = 0.0 ;
 				l1 = class2.get(i) ;
 				tmp = this.getp(l1 ,  1) ;
-		//		System.out.println(tmp );
 				
 				partiald[0] += 1 * ( 1 - tmp ) ;
 				for( int j = 0 ; j < featurenumber ; j ++ )
-					partiald[j+1] += l1.get(j) * ( 1 - tmp );
+					partiald[j+1] += l1.get(j) * ( 1 - tmp ) ;
 				
 				bool =true ;
 				for( int j = 0 ; j <= featurenumber ; j ++ )
 					if( partiald[j] > maxb )
 						bool = false ;
 				if( bool )
-					continue ;
+					cc++ ;
 				for( int j = 0 ; j <= featurenumber ; j ++ )
 					beita[j] += mu * partiald[j] ;
 			}
-
+//			}
+//			System.out.println(count + "   " + cc) ;
 			count ++ ;
-//			System.out.println(count) ;
-			if( count > 1 )
+			if( count > 3 )
 				return ;
-			if( count > 1000 )
-			{
-				System.out.println("more than " + count + "times");
-				System.exit(-1);
-				return ;
-			}
 		}
 	}
 	
