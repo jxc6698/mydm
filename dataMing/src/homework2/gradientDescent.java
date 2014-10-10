@@ -68,15 +68,6 @@ public class gradientDescent {
 			boolean bool = true ;
 			int cc = 0 ;
 			
-//			Integer ran = (int) (Math.random()*total) ;
-//			int ra = (int) (Math.random()*2) ;
-//			if( ra == 1 )
-//			{	
-			
-			
-
-			
-//		int i = ran % s1 ;
 			for(int i = 0 ; i < class1.size() ; i ++ )
 			{
 				
@@ -99,10 +90,7 @@ public class gradientDescent {
 				for( int j = 0 ; j <= featurenumber ; j ++ )
 					beita[j] += mu * partiald[j] ;
 			}
-//			}
-//			else
-//			{
-//			int i = ran %s2 ;
+
 			
 	
 			for( int i = 0 ; i < class2.size() ; i ++ )
@@ -126,17 +114,18 @@ public class gradientDescent {
 				for( int j = 0 ; j <= featurenumber ; j ++ )
 					beita[j] += mu * partiald[j] ;
 			}
-//			}
+
 //			System.out.println(count + "   " + cc) ;
 			count ++ ;
-			if( count > 3 )
+			if( count > 10 )
 				return ;
 		}
 	}
 	
 	List estimate( List<List<Double>> data )
 	{
-		List<Integer> result= new ArrayList<Integer>() ;
+	//	List<Integer> result= new ArrayList<Integer>() ;
+		List<Double> result= new ArrayList<Double>() ;
 		Double tmp = new Double(0) ;
 		List<Double> t = null ;
 		for(int i=0;i<data.size(); i ++ )
@@ -149,10 +138,11 @@ public class gradientDescent {
 				tmp += beita[j+1] * t.get(j) ; 
 			}
 //			System.out.println(tmp);
-			if( tmp > 0.5 )
-				result.add(1);
-			else
-				result.add(0);
+//			if( tmp > 0.5 )
+//				result.add(1);
+//			else
+//				result.add(0);
+			result.add(tmp) ;
 		}
 		return result ;
 	}

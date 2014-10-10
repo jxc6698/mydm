@@ -43,28 +43,43 @@ public class tfAndtfidf {
 				Iterator  iter = featureset.iterator() ;
 		        while (iter.hasNext()) {
 		        	String key = (String)iter.next();
-//		        	if( tokens[i][j].containsKey( key ) ){
-//		        		( (ArrayList)tmplist).add( new Double( tokens[i][j].get(key) ) );
-//		        	}
-//		        	else
-//		        	{
-//		        		( (ArrayList)tmplist).add( 0.0 );
-//		        	}
-		        	if( tokens[i][j].containsKey( key ) ){
-		        		if( tokens[i][j].get( key ) != 0.0 )
-		                	( (ArrayList)tmplist).add( 1.0 );
-		                else
-		                	( (ArrayList)tmplist).add( 0.0 );
-		            }
-		        	else {
-		        		( (ArrayList)tmplist).add( 0.0 );
-		            }
+		        	if( globalconfig.tfbool )
+		        	{
+		        		if( tokens[i][j].containsKey( key ) ){
+			        		if( tokens[i][j].get( key ) != 0.0 )
+			                	( (ArrayList)tmplist).add( 1.0 );
+			                else
+			                	( (ArrayList)tmplist).add( 0.0 );
+			            }
+			        	else {
+			        		( (ArrayList)tmplist).add( 0.0 );
+			            }
+		        	}
+		        	else
+		        	{
+		        		if( tokens[i][j].containsKey( key ) ){
+			        		( (ArrayList)tmplist).add( new Double( tokens[i][j].get(key) ) );
+			        	}
+			        	else
+			        	{
+			        		( (ArrayList)tmplist).add( 0.0 );
+			        	}
+		        	}
+		        	
 		        }
 
-	        	( (ArrayList)list[ count[i] ]).add(tmplist);
-	        	num[count[i]].add( i ) ;
-	        	
-	        	count[i] = ( (count[i] + 1 ) % cross_class ) ;
+		        if( globalconfig.whether_cross_check )
+		        {
+		        	( (ArrayList)list[ count[i] ]).add(tmplist);
+		        	num[count[i]].add( i ) ;
+		        	
+		        	count[i] = ( (count[i] + 1 ) % cross_class ) ;
+		        }
+		        else
+		        {
+		        	( (ArrayList)list[ 0 ]).add(tmplist);
+		        	num[ 0 ].add( i ) ;
+		        }
 	        }
 		}
 		return ;
@@ -112,21 +127,20 @@ public class tfAndtfidf {
 		        	{
 		        		( (ArrayList)tmplist).add( 0.0 );
 		        	}
-//		        	if( tokens[i][j].containsKey( key ) ){
-//		        		if( tokens[i][j].get( key ) != 0.0 )
-//		                	( (ArrayList)tmplist).add( 1.0 );
-//		                else
-//		                	( (ArrayList)tmplist).add( 0.0 );
-//		            }
-//		        	else {
-//		        		( (ArrayList)tmplist).add( 0.0 );
-//		            }
 		        }
 
-	        	( (ArrayList)list[ count[i] ]).add(tmplist);
-	        	num[count[i]].add( i ) ;
-	        	
-	        	count[i] = ( (count[i] + 1 ) % cross_class ) ;
+		        if( globalconfig.whether_cross_check )
+		        {
+		        	( (ArrayList)list[ count[i] ]).add(tmplist);
+		        	num[count[i]].add( i ) ;
+		        	
+		        	count[i] = ( (count[i] + 1 ) % cross_class ) ;
+		        }
+		        else
+		        {
+		        	( (ArrayList)list[ 0 ]).add(tmplist);
+		        	num[ 0 ].add( i ) ;
+		        }
 	        }
 		}
 		return ;
