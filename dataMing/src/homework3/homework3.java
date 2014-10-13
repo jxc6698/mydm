@@ -28,7 +28,7 @@ public class homework3 {
 		predata pred = new predata() ;
 		
 		globalconfig.whether_cross_check = false ;
-		globalconfig.tfbool = false ;
+		globalconfig.tfbool = true ;
 		
 		inputClass inputclass = new inputClass( Dir ) ;
 		inputclass.getAllFiles();
@@ -91,11 +91,11 @@ public class homework3 {
 		lsh.init(featurenum, 1  );
 		lsh.lshhashset(trainset, trainnum, hashset);
 		
-		for( int pp = 0 ; pp < hashset.size() ; pp ++)
-			System.out.println( hashset.get(pp).size() );
+//		for( int pp = 0 ; pp < hashset.size() ; pp ++)
+//			System.out.println( hashset.get(pp).size() );
 
-//		for( int k =10 ; k <= 50 ; k += 10)
-		int k = 10 ; 
+		for( int k =10 ; k <= 50 ; k += 10)
+//		int k = 10 ; 
 		{
 			int knum = 0 ;
 			int totalaccu = 0 ;
@@ -103,8 +103,8 @@ public class homework3 {
 			Integer maxk[] = new Integer[ k+1 ] ;
 			Double maxkv[] = new Double[ k+1 ] ;
 			
-//			for( int i =0 ; i < estset.size() ; i ++ )
-			int i = 0;
+			for( int i =0 ; i < estset.size() ; i ++ )
+//			int i = 0;
 			{
 				int c = lsh.lshhash(  estset.get(i) ) ;
 				
@@ -127,7 +127,6 @@ public class homework3 {
 					{
 						if( dis < maxkv[m] )
 						{
-							System.out.println( m ) ;
 							tmp = m ;
 							break ;
 						}
@@ -152,30 +151,15 @@ public class homework3 {
 						if( knum < k )
 							knum ++ ;
 					}
-//					if( tmp == k )
-//						continue ;
-//					else
-//					{
-//						for(int m =knum-1 ; m >=tmp ; m -- )
-//						{
-//							maxk[m+1] = maxk[m] ;
-//							maxkv[m+1] = maxkv[m] ;
-//						}
-//						maxk[tmp] = hashset.get(c).get(j) ;
-//						maxkv[tmp] = dis ;
-//						if( knum != k )
-//							knum ++ ;
-//					}
-					for( int pp = 0 ; pp < knum ; pp ++ )
-						System.out.print( maxk[pp] +" " + maxkv[pp] + "   "  ) ;
-					System.out.println("");
+//					for( int pp = 0 ; pp < knum ; pp ++ )
+//						System.out.print( maxk[pp] +" " + maxkv[pp] + "   "  ) ;
+//					System.out.println("");
 				}
 				int accu = 0 ;
 			
 				for( int j= 0 ; j < k ; j ++ )
-				{
-					
-					System.out.println( trainnum.get( maxk[j] ) +"  "+ estnum.get( i ) );
+				{	
+//					System.out.println( maxk[j] + "  " + trainnum.get( maxk[j] ) +"  "+ estnum.get( i ) );
 					if( trainnum.get( maxk[j] ) == estnum.get( i ) )
 					{
 						accu ++ ;
@@ -194,13 +178,30 @@ public class homework3 {
 	 static Double distance( List<Double> p1 , List<Double> p2 )
 	 {
 		Double dis = new Double( 0) ;
-		for(int i = 0 ; i < p1.size() ; i ++ )
+		
+		
+//		for(int i = 0 ; i < p1.size() ; i ++ )
+//		{
+//			dis += Math.pow( p1.get(i) - p2.get(i) , 2 ) ;
+//	//		dis += Math.abs( p1.get(i) - p2.get(i) ) ;
+//		}
+//	//	return  Math.sqrt( dis ) ;
+		Double tmp , tmp1 , tmp2 ;
+		
+
+		tmp = new Double(0) ; tmp1 = new Double(0) ; tmp2 = new Double(0) ;
+		for(int j = 0 ; j < p1.size() ; j ++ )
 		{
-	//		dis += Math.pow( p1.get(i) - p2.get(i) , 2 ) ;
-			dis += Math.abs( p1.get(i) - p2.get(i) ) ;
+			tmp += p1.get(j) * p1.get(j) ;
+			tmp1 += p1.get(j) * p2.get(j) ;
+			tmp2 += p2.get(j) * p2.get(j) ;
 		}
-	//	return  Math.sqrt( dis ) ;
+		dis = Math.acos( tmp1 / ( Math.sqrt(tmp) * Math.sqrt( tmp2 ) ) ) ;
+//		dis = 1 - (dis/Math.PI) ;
+		
+		
 		return dis ;
 	}
+	 
 	
 }
