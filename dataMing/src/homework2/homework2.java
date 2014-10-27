@@ -25,6 +25,9 @@ public class homework2 {
 		inputClass inputclass = new inputClass( Dir ) ;
 		inputclass.getAllFiles();
 
+		globalconfig.whether_cross_check = true ;
+		globalconfig.tfbool = false ;
+		
 		readData readdata = inputclass.readAllFiles() ;
 		
 		preProcessData preprocessdata = new preProcessData( readdata ) ;
@@ -55,7 +58,7 @@ public class homework2 {
 		tfidf.tf_append(featureset , pred.tokens , list , num , pred.CROSS_NUM ) ; 
 		gradientDescent grad[] = new gradientDescent[ classnum  ] ;
 
-		
+		double accuracy[] = new double[ classnum ] ;
 		List<List<Double>> c1 = null , c2 = null , allset = null , estset = null ;
 		List<Integer> allnum = new ArrayList<Integer>() , estnum = new ArrayList<Integer>() ;
 		List<Integer> n1=new ArrayList<Integer>() , n2 = new ArrayList<Integer>() ;
@@ -84,6 +87,7 @@ public class homework2 {
 			estnum.clear();
 			estset.addAll( list[(j+ pred.CROSS_NUM-1 )%pred.CROSS_NUM ] ) ;
 			estnum.addAll( num[ (j+ pred.CROSS_NUM-1 )%pred.CROSS_NUM ] ) ;
+			
 			
 			int totaltrain = estset.size() ;
 //			List<Integer> result = null ;
@@ -171,13 +175,29 @@ public class homework2 {
 			}
 				
 			System.out.println(accu);
-//			accu += estset.size() ;
 			}
 			System.out.println( "total  " + totaltrain + "  accuracy  " + accu ) ;
+			accuracy[j] = ((double)accu ) / totaltrain ; 
+			
 		}
-		
+		getresultmeanvariance( accuracy ) ;
 		
 		return ;
+	}
+	
+	static void getresultmeanvariance( double accuracy[] )
+	{
+		Double mean = new Double(0) ;
+		Double variance = new Double(0) ;
+		for( int i = 0 ; i< accuracy.length ; i ++ )
+		{
+			mean += accuracy[i] ;
+			variance += accuracy[i] * accuracy[i] ;
+		}
+		mean /= accuracy.length ;
+		variance /= accuracy.length ;
+		System.out.println("mean " + mean );
+		System.out.println("variance " + variance ) ;
 	}
 	
 	static void getc( List<List<Double>> list ,

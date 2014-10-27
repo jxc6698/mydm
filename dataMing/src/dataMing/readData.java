@@ -6,8 +6,8 @@ import java.util.List;
 import java.util.Set;
 
 public class readData {
-	List line[] = null ;
-	String  filenames[] = null ;
+	public List line[] = null ;
+	public String  filenames[] = null ;
 	
 	public Set<String> stopwords = null ;
 	

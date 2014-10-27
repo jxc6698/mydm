@@ -80,6 +80,7 @@ public class tfAndtfidf {
 		        	( (ArrayList)list[ 0 ]).add(tmplist);
 		        	num[ 0 ].add( i ) ;
 		        }
+		             
 	        }
 		}
 		return ;
@@ -141,6 +142,7 @@ public class tfAndtfidf {
 		        	( (ArrayList)list[ 0 ]).add(tmplist);
 		        	num[ 0 ].add( i ) ;
 		        }
+
 	        }
 		}
 		return ;

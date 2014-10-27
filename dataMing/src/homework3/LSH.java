@@ -3,6 +3,8 @@ package homework3;
 import java.util.ArrayList;
 import java.util.List;
 
+import weka.core.Debug.Random;
+
 public class LSH {
 	
 	
@@ -14,6 +16,7 @@ public class LSH {
 	 */
 	void init(  int num , int n )
 	{
+		Random r = new Random() ;
 		Double ss = null , tmp = null ;
 		for(int i=0;i < n ; i ++)
 		{
@@ -21,7 +24,7 @@ public class LSH {
 			ss = new Double(0) ;
 			for( int j=0 ; j < num ; j ++)
 			{
-				tmp = Math.random() - 0.5 ;
+				tmp = (double) (r.nextInt(2) - 1) ;
 				vec.get(i).add( tmp ) ;
 				ss += ( tmp * tmp ) ;
 			}

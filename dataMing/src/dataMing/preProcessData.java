@@ -84,7 +84,7 @@ public class preProcessData {
 			totald[i] = new HashMap<String,Double>() ;
 		}
 		for( int i=0 ; i < readdata.line.length ; i ++ )
-		{	
+		{
 			for( int j = 0 ; j < readdata.line[i].size() ; j ++ )
 			{
 				Iterator iter = tokens[i][j].entrySet().iterator() ;
@@ -115,6 +115,8 @@ public class preProcessData {
 	        }
 		}
 	}
+	
+	
 	
 	void nbd_start() 
 	{
@@ -210,7 +212,10 @@ public class preProcessData {
 //			if( tmp1 >7 || tmp1 < -7 )  // 17329
 //			if( tmp1 >8 || tmp1 < -8 )  // 71
 //			if( tmp1 >7 || tmp1 < -8  )	// 206
-			if( tmp1 <5  && tmp1 > -5 )
+//			if( tmp1 >6 || tmp1 < -6  )	// 17329
+//			if( tmp1>5 || tmp1 < -5)   // 21899
+			if( tmp1 <5  && tmp1 > -5 )  // 3791
+//			if( true )    // 25690
 			{
 				//iter.remove();
 			}
