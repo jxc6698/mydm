@@ -5,19 +5,21 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public class DT {
 	
 	treenode root = null ;
+	int c_r  = -1; // = 0 , classify , 1 regression
 	
-	void train( List<List<Double>> set , 
-			List<Integer> num , int classnum ,
-			int max_depth , int min_node  )
+	public void train( List<List<Double>> set , 
+			List<Double> num , int classnum ,
+			int max_depth , int min_node , int c_r )
 	{
-		
-		
+		this.c_r = c_r ;
 		int depth = 0 ;
 		root = null ;
 		treenode curt = null ;
@@ -38,21 +40,17 @@ public class DT {
 			stack.remove( stack.size() - 1 ) ;
 			
 			curt = cur.node ;
-//			if( root == null )
-//				root = curt ;
 			
 			if( cur.node.depth == max_depth )
 			{
-				int c = get_classnum( cur.index , num ) ;
+				double c = get_classnum( cur.index , num ) ;
 				curt.classid = c ;
-//				System.out.println(c);
 				continue ;
 			}
-			int c = is_one_class( cur.index , num ) ;
-			if( c >= 0 )  /* contains only one class */
+			datacmp c = is_one_class( cur.index , num ) ;
+			if( c.id == 1 )  /* contains only one class */
 			{
-				curt.classid = c ;
-//				System.out.println(c); 
+				curt.classid = c.data ;
 				continue ;
 			}
 			datacmp d = get_best_feature( set , cur.index , num , classnum ) ;
@@ -62,8 +60,8 @@ public class DT {
 			double fval = d.data ;
 			if( d.data == -1 )  /* with same feature but different classnum */
 			{
-				c = get_classnum( cur.index , num ) ;
-				curt.classid = c ;
+				double tmp = get_classnum( cur.index , num ) ;
+				curt.classid = tmp ;
 				continue ;
 			}
 			nextl = new Stackitem() ;
@@ -91,10 +89,11 @@ public class DT {
 		return ;
 	}
 	
-	void estimate( List<List<Double>> set , 
-			List<Integer> num )
+	public void estimate( List<List<Double>> set , 
+			List<Double> num )
 	{
 		treenode curt = root ;
+//		System.out.println(root.classid);
 		for( int i= 0 ; i< set.size() ; i ++)
 		{
 //			System.out.println("+++++");
@@ -154,50 +153,78 @@ public class DT {
 			}  
 	};
 	
-	int is_one_class( List<Integer> index , List<Integer> num )
+	datacmp is_one_class( List<Integer> index , List<Double> num )
 	{
 		if( index.size() == 0 )
 		{
 			System.out.println("error ----1");
 			System.exit(-1);
 		}
-		int tmp = num.get( index.get(0) );
-		int ret = tmp ;
+		double tmp = num.get( index.get(0) );
+		double ret = tmp ;
+		int mark = 1 ;
 		for( int i =0;i< index.size() ; i++)
 		{
 			if( num.get( index.get(i) ) == tmp )
 				;
 			else
-				ret = -1 ;
+				mark = 0 ;
 		}
-		return ret ;
+		return new datacmp( mark , ret ) ;
 	}
-	int get_classnum( List<Integer> index , List<Integer> num )
+	
+	double get_classnum( List<Integer> index , List<Double> num )
+	{
+		if( this.c_r == 0 )
+			return get_classnum_c( index , num ) ;
+		else if( this.c_r == 1 )
+			return get_classnum_r( index , num ) ;
+		else
+		{
+			System.out.println("error 4") ;
+			return 0 ;
+		} 
+	}
+	double get_classnum_c( List<Integer> index , List<Double> num )
 	{
 		
-		List<Integer> count = new ArrayList<Integer>() ;
+		Map<Double,Integer> count = new HashMap<Double,Integer>() ;
 		for( int i =0; i<index.size() ; i++)
 		{
-			int tmp = num.get(index.get(i)) ;
-			try{
-				count.get( tmp ) ;
-			}catch ( IndexOutOfBoundsException e ){
-				for(int j = count.size() ; j <= tmp ; j ++)
-				{
-					count.add( 0 ) ;
-				}
-			}
-			count.set( tmp , count.get( tmp )+1 ) ;
+			double tmp = num.get(index.get(i)) ;
+			if( count.containsKey(tmp))
+				count.put(tmp, count.get(tmp) + 1 ) ;
+			else
+				count.put(tmp, 1) ;
 		}
-		int tmp = 0 , max=0 ;
-		for( int i =0;i< count.size() ; i++ )
+		double tmp = 0 ;int max=0 ;
+		Iterator iter = count.keySet().iterator() ;
+//		for( int i =0;i< count.size() ; i++ )
+		while(iter.hasNext())
 		{
-			if( count.get(i) > max )
+			double key = (double) iter.next() ;
+			if( count.get(key) > max )
 			{
-				tmp = i ;
-				max = count.get(i) ;
+				tmp = key ;
+				max = count.get(key) ;
 			}
 		}
+		return tmp ;
+	}
+	double get_classnum_r( List<Integer> index , List<Double> num )
+	{
+		
+//		Map<Double,Integer> count = new HashMap<Double,Integer>() ;
+		int count = index.size() ;
+		double total = 0.0 ;
+		for( int i =0; i<index.size() ; i++)
+		{
+			count ++ ;
+			double tmp = num.get(index.get(i)) ;
+			total += tmp ;
+		}
+		double tmp = 0 ;int max=0 ;
+		tmp = total/count ;
 		return tmp ;
 	}
 	/**
@@ -209,25 +236,32 @@ public class DT {
 	 * @return
 	 */
 	datacmp get_best_feature( List<List<Double>> fset , List<Integer> index ,
-			List<Integer> num , int classnum )  
+			List<Double> num , int classnum )  
 	{
 		int featurenum = fset.get(0).size() ;
 		double max = -1 ;
 		int maxindex = 0 ;
-		int count[] = new int[classnum] ;
-		int total[] = new int[classnum] ;
-		for(int i=0;i<classnum;i++)
-			total[i] = 0 ;
+//		int count[] = new int[classnum] ;
+//		int total[] = new int[classnum] ;
+		Map<Double,Integer> count = new HashMap<Double,Integer>() ;
+		Map<Double,Integer> total = new HashMap<Double,Integer>() ;
 		for( int j = 0 ; j < index.size() ; j++ ){
-			total[ num.get( index.get(j) ) ] ++ ;
+			Double key = num.get( index.get(j) ) ;
+			if( total.containsKey( num.get( index.get(j) ) )){
+				total.put( key , total.get(key)+1);
+			}else{
+				total.put( key , 1 );
+			}
 		}
 		
 		double entropy1 =0 , entropy2 = 0 , mmentropy = 0 ;
 		datacmp result = new datacmp( 0 , -1.0) ;
 		
-		for(int j=0;j<classnum ; j++)
+		Iterator iter = total.keySet().iterator();
+		while(iter.hasNext())
 		{
-			double tmp = ((double)total[j]) / index.size() ;
+			double tmpval = (double) iter.next() ;
+			double tmp = ((double)total.get(tmpval)) / index.size() ;
 			if( tmp != 0 )
 				entropy1 += (-tmp)*Math.log(tmp) ;
 		}
@@ -235,11 +269,11 @@ public class DT {
 		for( int i =0 ; i < featurenum ; i++)
 		{
 			ArrayList<datacmp> tmp = new ArrayList<datacmp>() ;
-
-			for(int j=0;j<classnum;j++)
-				count[j] = 0 ;
-			
-			
+			count.clear();
+			iter = total.keySet().iterator() ;
+			while( iter.hasNext() ){
+				count.put((Double) iter.next(), 0);
+			}
 			for( int j = 0 ; j < index.size() ; j++ )
 			{
 				Double val = fset.get( index.get(j)).get(i) ;
@@ -259,18 +293,29 @@ public class DT {
 				}
 				if( val == tmp.get(j).data )  // do not cal the last 
 				{
-					count[ num.get(tmp.get(j).id) ] ++  ;
+					double tmpval = num.get(tmp.get(j).id ) ;
+					if( count.containsKey(tmpval) ){
+						count.put(tmpval, count.get(tmpval)+1 ) ;
+					}else{
+						count.put(tmpval, 1) ;
+						System.out.println("error 3");
+					}
 				}
 				else
 				{
 					entropy2 = 0 ;
 					// check
-					for( int k=0;k < classnum ; k ++ )
-					{
-						double tmp1 = ((double)count[k]) / j ; // j is the total number
+					iter = count.keySet().iterator() ;
+					while(iter.hasNext()){
+						double tmpval = (double) iter.next();
+						double tmp1 = ((double)count.get(tmpval) ) / j ; // j is the total number
 						if( tmp1 != 0 )
 							entropy2 += (-tmp1)*Math.log(tmp1) * j / index.size() ;
-						tmp1 = ((double)(total[k]-count[k])) / ( index.size() - j ) ;
+					}
+					iter = total.keySet().iterator() ;
+					while(iter.hasNext()){
+						double tmpval = (double)iter.next() ;
+						double tmp1 = ((double)(total.get(tmpval)-count.get(tmpval))) / ( index.size() - j ) ;
 						if( tmp1 != 0 ) 
 							entropy2 += (-tmp1)*Math.log(tmp1) * ( index.size() - j ) / index.size() ;
 					}
@@ -279,6 +324,7 @@ public class DT {
 					split += (-tmp1)*Math.log(tmp1) ;
 					tmp1 = ((double)(index.size()-j)) / index.size() ;
 					split += (-tmp1)*Math.log(tmp1) ;
+//					System.out.println( entropy1 +"  "+entropy2);
 					if( entropy1 - entropy2 > maxentropy ) /* ID3 */
 //					if( (entropy1 - entropy2 )/split > maxentropy ) /* C4.5 */
 					{

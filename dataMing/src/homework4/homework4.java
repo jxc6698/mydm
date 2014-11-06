@@ -129,6 +129,7 @@ public class homework4 {
 			oldcenter = center ;
 
 			center = getcenter( pointset , trainset ) ;
+			System.out.println(center);
 			if( center.equals( oldcenter ) )
 				break ;
 			else
@@ -138,7 +139,8 @@ public class homework4 {
 				{
 					int c = (int) iter.next() ;
 					if(  oldcenter.contains(c) )
-						System.out.println( c + " " );
+//						System.out.println( c + " " );
+						;
 				}
 			}
 			if( cc > 10 )

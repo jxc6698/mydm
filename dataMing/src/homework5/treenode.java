@@ -1,7 +1,7 @@
 package homework5;
 
 public class treenode {
-	int classid ;
+	double classid ;
 	treenode left , right ;
 	int depth ;
 	double value ;
