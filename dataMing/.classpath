@@ -2,8 +2,11 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.7"/>
-	<classpathentry kind="lib" path="/home/jxc/workspace/dataMing/jar/weka-monolithic.jar"/>
 	<classpathentry kind="lib" path="/home/jxc/workspace/dataMing/jar/IKA/IKAnalyzer2012_u6.jar"/>
 	<classpathentry kind="lib" path="/home/jxc/workspace/dataMing/jar/lucene-core-3.6.0.jar"/>
+	<classpathentry kind="lib" path="/home/jxc/workspace/weka/weka-3-6-11/remoteExperimentServer.jar"/>
+	<classpathentry kind="lib" path="/home/jxc/workspace/weka/weka-3-6-11/weka.jar"/>
+	<classpathentry kind="lib" path="/home/jxc/workspace/weka/weka-3-6-11/weka-src.jar"/>
+	<classpathentry kind="lib" path="/home/jxc/workspace/weka/DTNB1.0.3/DTNB.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

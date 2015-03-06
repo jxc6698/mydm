@@ -14,6 +14,8 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import nlplab.nlplab1;
+
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
@@ -59,28 +61,36 @@ public class preProcessData {
 		tokens = new Map[readdata.line.length][] ;
 		int posts = 0 ;    // number of total posts
 		
-		for( int i=0 ; i < readdata.line.length ; i ++ )
+		
+		if( !globalconfig.nlp_ngram )
 		{
-			tokens[i] = new Map[ readdata.line[i].size() ] ;
-			posts += readdata.line[i].size() ;
-			for( int j = 0 ; j < readdata.line[i].size() ; j ++ )
+			for( int i=0 ; i < readdata.line.length ; i ++ )
 			{
-				tokens[i][j] = new HashMap<String, Integer>() ;
-				try {
-					tokens[i][j] = token.getTextDef( (String)readdata.line[i].get(j) );
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+				tokens[i] = new Map[ readdata.line[i].size() ] ;
+				posts += readdata.line[i].size() ;
+				for( int j = 0 ; j < readdata.line[i].size() ; j ++ )
+				{
+					tokens[i][j] = new HashMap<String, Integer>() ;
+					try {
+						tokens[i][j] = token.getTextDef( (String)readdata.line[i].get(j) );
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 				}
 			}
+		}else{
+			nlplab1 ngram = new nlplab1() ;
+			ngram.prepare( readdata , tokens ) ;
 		}
-		
 		// get total 
 		total = new HashMap[ classnum ] ;
 		totald = new HashMap[ classnum ] ;
 		for( int i=0 ; i < classnum ; i ++)
 		{
+			/* appear total times */
 			total[i] = new HashMap<String,Double>() ;
+			/* appear total docs */
 			totald[i] = new HashMap<String,Double>() ;
 		}
 		for( int i=0 ; i < readdata.line.length ; i ++ )
@@ -94,6 +104,7 @@ public class preProcessData {
 		        	if( isNumeric((String)key ) )
 		        	{
 		        		iter.remove();
+		        		if(globalconfig.nlp_ngram) System.out.println("Error: still have numeric");
 		        		continue ;
 		        	}
 		        	// total  tf 
@@ -118,7 +129,7 @@ public class preProcessData {
 	
 	
 	
-	void nbd_start() 
+	public void nbd_start() 
 	{
 		this.prepare();
 		int featurenum = 0 ;
@@ -145,6 +156,7 @@ public class preProcessData {
 		for( int j = 0 ; j < CROSS_NUM ; j ++ )
 		{
 			naive.clear();
+			
 			for( int i = 0 ;i < CROSS_NUM -1  ; i ++ )
 			{		
 				naive.train( list[(j+i)%CROSS_NUM] , num[(j+i)%CROSS_NUM] , readdata.line.length , featurenum );			
@@ -225,8 +237,6 @@ public class preProcessData {
         
         System.out.println( list.size() );
         return list.size() ;
-
-        
 	}
 	
 	
@@ -245,7 +255,7 @@ public class preProcessData {
 	
 	
 	
-	void nbcd_start()
+	public void nbcd_start()
 	{
 		this.prepare();
 		
@@ -277,7 +287,7 @@ public class preProcessData {
 					naive.train( list[(j+i)%CROSS_NUM] , num[(j+i)%CROSS_NUM] , readdata.line.length , featurenum );			
 				}
 				if(debug) System.out.println("------------");
-				
+
 				Integer result[] = null ;
 				result = naive.estimate( list[(j+CROSS_NUM -1)%CROSS_NUM] ,featurenum ) ;
 				int accu = 0 ;
@@ -294,7 +304,7 @@ public class preProcessData {
 		this.getresultmeanvariance();
 	}
 	
-	void nbcg_start()
+	public void nbcg_start()
 	{
 		this.prepare();
 		int featurenum = 0 ;
@@ -378,7 +388,19 @@ public class preProcessData {
 	        }
 	        return wordsFren;
 	    }
-			
+		
+		public List<String> getTextDefbylist( String text )throws IOException {
+			List<String> wordsFren=new ArrayList<String>();
+			IKSegmenter ikSegmenter = new IKSegmenter(new StringReader(text), true);
+			Lexeme lexeme;
+			while ((lexeme = ikSegmenter.next()) != null) {
+				if(lexeme.getLexemeText().length()>1){
+					wordsFren.add(lexeme.getLexemeText());
+				}
+			}
+			return wordsFren;
+		}
+		
 		public void showToken( Map<String, Integer> wordsFren )
 		{
 	        Iterator iter = wordsFren.entrySet().iterator();

@@ -20,7 +20,7 @@ public class NaiveBayes {
 	 */
 	
 	// number of each class
-	Integer number[] ;
+	public Integer number[] = null ;
 	
 	// array index is class id , feature id
 	// feature 1 , feature 2 ......   feature max
@@ -30,10 +30,10 @@ public class NaiveBayes {
 	
 	void clear()
 	{
-		number = null ;
-		classifier = null ;
+		this.number = null ;
+		this.classifier = null ;
 		this.featurenumber = 0 ;
-		classnumber = 0 ;
+		this.classnumber = 0 ;
 	}
 	
 	void train( List< List<Double>> traindata , List<Integer> num , int classnum , int featurenum )
@@ -42,13 +42,13 @@ public class NaiveBayes {
 			return ;
 		this.featurenumber = featurenum ;
 		this.classnumber = classnum ;
-		if( classifier == null )
+		if( this.classifier == null )
 		{
 			classifier = new HashMap[classnum][] ;
 			for( int i =0;i<classnum ; i ++)
 				classifier[i] = new HashMap[ featurenum ] ;
 			this.number = new Integer[ classnum ] ;
-			
+
 			for(int i =0; i < number.length ; i ++)
 				number[i] = new Integer(0) ;
 			total = new Double[classnum][];
@@ -59,6 +59,7 @@ public class NaiveBayes {
 					total[i][j] = new Double(0) ;
 			}
 		}
+		
 		for( int i =0 ; i <num.size() ; i ++ )
 		{
 			number[ num.get(i) ] ++ ;
@@ -78,7 +79,7 @@ public class NaiveBayes {
 				total[num.get(i)][j] += 1 ;
 			}	
 		}
-
+//		System.out.println(this.number.length);
 	} 
 	
 	Integer[] estimate( List< List<Double>> esdata ,
@@ -86,7 +87,7 @@ public class NaiveBayes {
 	{
 		double delta = 0.01 ;
 		Integer result[] = new Integer[ esdata.size() ] ;
-		Double probability[] = new Double[ this.number.length] ;
+		Double probability[] = new Double[ this.classnumber] ;
 		for(int i =0; i < probability.length ; i++)
 			probability[i] = new Double(1) ;
 		for( int i = 0 ; i < esdata.size() ; i ++ )
@@ -97,7 +98,7 @@ public class NaiveBayes {
 			for( int j = 0 ; j < featurenum ; j ++ )
 			{
 				// k is class id
-				for( int k = 0 ; k < this.number.length ; k ++ )
+				for( int k = 0 ; k < this.classnumber ; k ++ )
 				{
 					if( classifier[ k ][j].get( esdata.get(i).get(j) ) == null )
 					{

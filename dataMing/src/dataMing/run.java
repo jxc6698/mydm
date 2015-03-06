@@ -12,6 +12,10 @@ public class run {
 	public static void main(String[] args )
 	{
 
+		globalconfig.whether_cross_check = true ;
+		globalconfig.tfbool = true ;
+		globalconfig.nlp_ngram = false;
+		
 		String Dir = "lily" ;
 		
 		inputClass inputclass = new inputClass( Dir ) ;

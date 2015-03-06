@@ -100,7 +100,7 @@ public class DT {
 			curt = root ;
 			while( curt != null )
 			{
-				if( curt.classid != -1 )
+				if( curt.featureid == -1 )
 				{
 					num.add(curt.classid) ;
 					break ;
@@ -319,11 +319,11 @@ public class DT {
 						if( tmp1 != 0 ) 
 							entropy2 += (-tmp1)*Math.log(tmp1) * ( index.size() - j ) / index.size() ;
 					}
-					double split = 0 ;
-					double tmp1 = ((double)j) / index.size() ;
-					split += (-tmp1)*Math.log(tmp1) ;
-					tmp1 = ((double)(index.size()-j)) / index.size() ;
-					split += (-tmp1)*Math.log(tmp1) ;
+//					double split = 0 ;
+//					double tmp1 = ((double)j) / index.size() ;
+//					split += (-tmp1)*Math.log(tmp1) ;
+//					tmp1 = ((double)(index.size()-j)) / index.size() ;
+//					split += (-tmp1)*Math.log(tmp1) ;
 //					System.out.println( entropy1 +"  "+entropy2);
 					if( entropy1 - entropy2 > maxentropy ) /* ID3 */
 //					if( (entropy1 - entropy2 )/split > maxentropy ) /* C4.5 */

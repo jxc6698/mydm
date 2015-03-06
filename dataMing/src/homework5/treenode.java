@@ -10,5 +10,6 @@ public class treenode {
 	{
 		left = right = null ;
 		this.classid = -1 ;
+		this.featureid = -1;
 	}
 }

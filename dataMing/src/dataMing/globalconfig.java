@@ -6,6 +6,6 @@ public class globalconfig {
 	public static boolean debug_result = false ;
 	public static boolean cycle_debug = false ;
 
-	
-	public static boolean tfbool ;
+	public static boolean nlp_ngram = false ;
+	public static boolean tfbool = false;
 }

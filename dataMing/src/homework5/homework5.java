@@ -111,8 +111,9 @@ public class homework5 {
 		}
 		cross_fold( list[0] , num[0] , list1 , num1 , pred.CROSS_NUM ) ;
 		
-//		for( int i=0;i< pred.CROSS_NUM ; i ++ ) 		
-		int i = 0 ;
+		double mean_accu = 0 ;
+		for( int i=0;i< pred.CROSS_NUM ; i ++ ) 		
+//		int i = 0 ;
 		{
 			List<List<Double>> traindata = new ArrayList() ;
 			List<Double> trainnum = new ArrayList() , result = new ArrayList() ;
@@ -125,7 +126,7 @@ public class homework5 {
 			maintree.train(traindata, trainnum, classnum , 500, -1 , 0 );
 			maintree.estimate( list1[ (i+pred.CROSS_NUM-1)%pred.CROSS_NUM ] , result );
 		
-			System.out.println("------------");
+//			System.out.println("------------");
 			int accu = 0 ;
 			for( int j=0 ; j<result.size() ; j ++ )
 			{
@@ -137,8 +138,11 @@ public class homework5 {
 				else
 					if(globalconfig.debug_result)System.out.println( num1[9].get(j) +"  " + result.get(j) ) ;
 			}
-			System.out.println( "total  "+result.size() +"  accu  "+accu );
+			mean_accu += ((double)(accu))/result.size();
+//			System.out.println( "total  "+result.size() +"  accu  "+accu );
 		}
+		mean_accu /= pred.CROSS_NUM ;
+		System.out.println( "mean accuracy  " + mean_accu );
 	}
 	
 	
@@ -187,22 +191,23 @@ public class homework5 {
 		eraseNaN( list , num ) ;
 		cross_fold( list , num , list1 , num1 , cross_num ) ;
 		
-		
-//		for( int i=0;i< pred.CROSS_NUM ; i ++ ) 		
-			int i = 0 ;
+		double mean_accu = 0, var_accu = 0;
+		for( int i=0;i< cross_num ; i ++ ) 		
+//		int i = 0 ;
+		{
+			List<List<Double>> traindata = new ArrayList() ;
+			List<Double> trainnum = new ArrayList() , result = new ArrayList() ;
+			for(int j=0;j< cross_num-1 ;j++)
 			{
-				List<List<Double>> traindata = new ArrayList() ;
-				List<Double> trainnum = new ArrayList() , result = new ArrayList() ;
-				for(int j=0;j< cross_num-1 ;j++)
-				{
-					traindata.addAll( list1[ (i + j)%cross_num ] ) ;
-					trainnum.addAll( num1[ (i + j)%cross_num] ) ;
-				}
-				DT maintree = new DT() ; 
-				maintree.train(traindata, trainnum, classnum , 500, -1 , classify_regression );
-				maintree.estimate( list1[ (i+cross_num-1)%cross_num ] , result );
-			
-				System.out.println("------------");
+				traindata.addAll( list1[ (i + j)%cross_num ] ) ;
+				trainnum.addAll( num1[ (i + j)%cross_num] ) ;
+			}
+			DT maintree = new DT() ; 
+			maintree.train(traindata, trainnum, classnum , 500, -1 , classify_regression );
+			maintree.estimate( list1[ (i+cross_num-1)%cross_num ] , result );
+		
+//			System.out.println("------------");
+			if( classify_regression == 0 ) {
 				int accu = 0 ;
 				for( int j=0 ; j<result.size() ; j ++ )
 				{
@@ -214,9 +219,21 @@ public class homework5 {
 					else
 						if(globalconfig.debug_result)System.out.println( num1[9].get(j) +"  " + result.get(j) ) ;
 				}
-				System.out.println( "total  "+result.size() +"  accu  "+accu );
+				mean_accu += ((double)(accu))/result.size();
+	//			System.out.println( "total  "+result.size() +"  accu  "+accu );
+			} else {
+				double mean = 0, variance = 0 ;
+				for( int j=0 ; j<result.size() ; j ++ ) {
+					double tmpval = num1[ (i+cross_num-1)%cross_num ].get(j) - result.get(j);
+					mean += tmpval;
+					variance += tmpval * tmpval;
+				}
+				mean_accu += Math.sqrt( variance / result.size() - Math.pow(mean/result.size(),2) );
 			}
 			
+		}
+		mean_accu /= cross_num;
+		System.out.println( "mean accuracy  " + mean_accu );
 	}
 	
 	
@@ -350,8 +367,9 @@ public class homework5 {
 		}
 		cross_fold( list[0] , num[0] , list1 , num1 , pred.CROSS_NUM ) ;
 		 
-//		for( int i=0;i< pred.CROSS_NUM ; i ++ ) 
-		int i = 0 ;
+		double mean_accu = 0;
+		for( int i=0;i< pred.CROSS_NUM ; i ++ ) 
+//		int i = 0 ;
 		{
 			List<List<Double>> traindata = new ArrayList() , estdata= null ;
 			List<Double> trainnum = new ArrayList() , result = new ArrayList() , estnum = null ;
@@ -403,7 +421,7 @@ public class homework5 {
 			
 			result.clear();
 			DT metaDT = new DT() ;
-			System.out.println(newlist.size() +"  "+newnum.size());
+//			System.out.println(newlist.size() +"  "+newnum.size());
 			metaDT.train( newlist , newnum, 10 , 100, -1 , 0 );
 			
 			DT dt[] = new DT[10] ; // base classifier
@@ -434,20 +452,38 @@ public class homework5 {
 			result.clear();
 			metaDT.estimate(newlist, result);
 			
+//			int accu = 0 ;
+//			for( int j=0 ; j<result.size() ; j ++ )
+//			{
+//				if( estnum.get(j).equals( result.get(j) ) )
+//				{
+//					accu ++ ;
+////					System.out.println(estnum.get(j)) ;
+//				}
+//				else
+////					System.out.println( estnum.get(j) +"  " + result.get(j) ) ;
+//					;
+//			}
+//			System.out.println( "total  "+result.size() +"  accu  "+accu );
+//		}
+		
 			int accu = 0 ;
 			for( int j=0 ; j<result.size() ; j ++ )
 			{
-				if( estnum.get(j).equals( result.get(j) ) )
+				if( num1[ (i+pred.CROSS_NUM-1)%pred.CROSS_NUM ].get(j).equals( result.get(j) ) )
 				{
 					accu ++ ;
-					System.out.println(estnum.get(j)) ;
+					if(globalconfig.debug_result)System.out.println(num1[9].get(j)) ;
 				}
 				else
-//					System.out.println( estnum.get(j) +"  " + result.get(j) ) ;
-					;
+					if(globalconfig.debug_result)System.out.println( num1[9].get(j) +"  " + result.get(j) ) ;
 			}
-			System.out.println( "total  "+result.size() +"  accu  "+accu );
+			mean_accu += ((double)(accu))/result.size();
+	//		System.out.println( "total  "+result.size() +"  accu  "+accu );
 		}
+		mean_accu /= pred.CROSS_NUM ;
+		System.out.println( "mean accuracy  " + mean_accu );
+		
 	}
 	
 	
@@ -476,8 +512,8 @@ public class homework5 {
 		featurenum = extractdata( readdata , list , num ) ;
 		taskclassify( list[0] , num[0] , pred.CROSS_NUM , classnum , 0 ) ;
 		taskclassify( list[1] , num[1] , pred.CROSS_NUM , classnum , 0 ) ;
-//		taskclassify( list[2] , num[2] , pred.CROSS_NUM , classnum , 1 ) ;
-//		taskclassify( list[3] , num[3] , pred.CROSS_NUM , classnum , 1 ) ;
+		taskclassify( list[2] , num[2] , pred.CROSS_NUM , classnum , 1 ) ;
+		taskclassify( list[3] , num[3] , pred.CROSS_NUM , classnum , 1 ) ;
 		
 		return ;
 	}
@@ -497,9 +533,9 @@ public class homework5 {
 		eraseNaN( list , num ) ;
 		cross_fold( list , num , list1 , num1 , cross_num ) ;
 		
-		
-//		for( int i=0;i< pred.CROSS_NUM ; i ++ ) 
-		int i = 0 ;
+		double mean_accu = 0 ;
+		for( int i=0;i< cross_num ; i ++ ) 
+//		int i = 0 ;
 		{
 			List<List<Double>> traindata = new ArrayList() , estdata= null ;
 			List<Double> trainnum = new ArrayList() , result = new ArrayList() , estnum = null ;
@@ -581,20 +617,36 @@ public class homework5 {
 			}
 			result.clear();
 			metaDT.estimate(newlist, result);
+
 			
-			int accu = 0 ;
-			for( int j=0 ; j<result.size() ; j ++ )
-			{
-				if( estnum.get(j).equals( result.get(j) ) )
+			if( classify_regression == 0 ) {
+				int accu = 0 ;
+				for( int j=0 ; j<result.size() ; j ++ )
 				{
-					accu ++ ;
-					if(globalconfig.debug_result)System.out.println(estnum.get(j)) ;
+					if( num1[ (i+cross_num-1)%cross_num ].get(j).equals( result.get(j)) )
+					{
+						accu ++ ;
+						if(globalconfig.debug_result)System.out.println(num1[9].get(j)) ;
+					}
+					else
+						if(globalconfig.debug_result)System.out.println( num1[9].get(j) +"  " + result.get(j) ) ;
 				}
-				else
-					if(globalconfig.debug_result)System.out.println( estnum.get(j) +"  " + result.get(j) ) ;
+				mean_accu += ((double)(accu))/result.size();
+	//			System.out.println( "total  "+result.size() +"  accu  "+accu );
+			} else {
+				double mean = 0, variance = 0 ;
+				for( int j=0 ; j<result.size() ; j ++ ) {
+					double tmpval = num1[ (i+cross_num-1)%cross_num ].get(j) - result.get(j);
+					mean += tmpval;
+					variance += tmpval * tmpval;
+				}
+				mean_accu += Math.sqrt( variance / result.size() - Math.pow(mean/result.size(),2) );
 			}
-			System.out.println( "total  "+result.size() +"  accu  "+accu );
+			
 		}
+		mean_accu /= cross_num;
+		System.out.println( "mean accuracy  " + mean_accu );
+		
 		return ;
 	}
 	
